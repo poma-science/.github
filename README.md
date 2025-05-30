@@ -38,14 +38,27 @@ Requires **Python 3.10+**. Install the core packages:
 
 ```bash
 pip install poma-senter doc2poma
-pip install https://github.com/poma-science/poma-chunker/releases/latest
+
+# Choose the appropriate command for your platform and Python version:
+
+# Windows (Python 3.13)
+pip install https://github.com/poma-science/poma-chunker/releases/download/latest/poma_chunker-0.1.0-cp313-cp313-win_amd64.whl
+
+# Windows (Python 3.12)
+pip install https://github.com/poma-science/poma-chunker/releases/download/latest/poma_chunker-0.1.0-cp312-cp312-win_amd64.whl
+
+# macOS (Python 3.13)
+pip install https://github.com/poma-science/poma-chunker/releases/download/latest/poma_chunker-0.1.0-cp313-cp313-macosx_10_13_x86_64.whl
+
+# Linux (Python 3.13)
+pip install https://github.com/poma-science/poma-chunker/releases/download/latest/poma_chunker-0.1.0-cp313-cp313-manylinux_2_28_x86_64.whl
 ```
 
 For integrations, add `pip install poma-integrations` and framework-specific packages as needed.
 
 > 🔑 **Note:** You'll need API keys (e.g., `OPENAI_API_KEY`, `GEMINI_API_KEY`) for the models you plan to use.
 
-[See full installation details](#installation) including recommended models and additional requirements.
+See above for platform-specific installation instructions. Additional requirements and recommended models are detailed in the [Installation](#installation) section below.
 
 ### Example Implementations
 
