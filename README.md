@@ -38,7 +38,7 @@ Requires **Python 3.10+**. Install the core packages:
 
 ```bash
 pip install poma-senter doc2poma
-pip install https://github.com/poma-science/poma-chunker/releases/download/latest/poma_chunker-latest.whl
+pip install git+https://github.com/poma-science/poma-chunker.git
 ```
 
 For integrations, add `pip install poma-integrations` and framework-specific packages as needed.
@@ -462,7 +462,7 @@ Requires **Python 3.10+**.
 
 ```
 pip install poma-senter doc2poma
-pip install https://github.com/poma-science/poma-chunker/releases/download/latest/poma_chunker-latest.whl
+pip install git+https://github.com/poma-science/poma-chunker.git
 ```
 
 For the integration examples, you will also need:
