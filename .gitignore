@@ -1,0 +1,7 @@
+# everything but the explicit include list!
+*
+!.gitignore
+!example.html
+!example.pdf
+!example.py
+!example*.py
