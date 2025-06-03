@@ -53,11 +53,8 @@ cfg = {
     "conversion_provider": "gemini",
     "conversion_model": "gemini-2.0-flash",
     "chunking_provider": "openai",
-    "chunking_model": {
-        "model_text_indent": "gpt-4.1-mini",
-        "model_tabletree": "gpt-4.1-mini",
-        "model_tabletree_overlong": "gpt-4o",
-    }}
+    "chunking_model": "gpt-4.1-mini",
+}
 
 # 1️⃣ ingest
 # Convert the document to a .poma archive using the Doc2PomaLoader.

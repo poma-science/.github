@@ -771,26 +771,15 @@ This two-phase approach ensures that document structure is fully preserved, enab
 
 ---
 
-**Detailed Workflow Example** 
-
-POMA provides a complete end-to-end workflow for document processing, chunking, and retrieval: 
-
-* **Convert** a document to .poma   
-* **Segment** into one sentence per line (poma-senter)   
-* **Chunk** into structure-aware units (poma-chunker)   
-* **Index** chunksets in your favorite search or vector DB   
-* **Retrieve** relevant chunksets for user queries   
-* **Assemble** a "cheatsheet" (compact, deduplicated context for your LLM prompt) 
-
 ### **Complete End-to-End Workflow** 
 
-The example implementation can be found in the examples/flow.py file, which demonstrates the following steps: 
+POMA provides a complete end-to-end workflow for document pre-processing, chunking, and retrieval:
 
-1. **Document Conversion**: Using doc2poma.convert() to transform files into the standardized .poma archive format.   
-2. **Chunking Process**: Using poma_chunker.process() to generate both chunks and chunksets from the .poma archive. These would then be saved/indexed/embedded in the user's (vector and/or fulltext) database.   
-3. **Chunkset Selection**: In a real-world scenario, you would retrieve relevant chunksets based on a user query using vector or fulltext search. The example demonstrates this by selecting the broadest and narrowest chunksets.   
-4. **Relevant Chunk Extraction**: Using poma_chunker.get_relevant_chunks() to extract all chunks referenced by the selected chunksets.   
-5. **Cheatsheet Generation**: Using poma_chunker.generate_cheatsheet() to create a concise, context-preserving text from the relevant chunks. 
+1. **Document Conversion**: Using doc2poma.convert() to transform files into the standardized .poma archive format; including *Segmentation* into one sentence per line (poma-senter).   
+2. **Content Chunking**: Using poma_chunker.process() to generate both chunks and structure-aware chunksets from the .poma archive. These would then be saved/indexed/embedded in the user's (vector and/or fulltext) database.   
+3. **Chunkset Retrieval**: In a real-world scenario, the user would then retrieve relevant chunksets based on a query using vector or fulltext search.
+4. **Chunk Selection**: Using poma_chunker.get_relevant_chunks() to select all chunks referenced by the selected chunksets.   
+5. **Cheatsheet Generation**: Using poma_chunker.generate_cheatsheet() to create a concise, context-preserving text from the relevant chunks for the LLM prompt. 
 
 This workflow can be customized with different language models for various processing steps. The examples folder includes configuration options for conversion and chunking models.
 
