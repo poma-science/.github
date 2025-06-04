@@ -62,7 +62,7 @@ POMA offers a simple two-step process for document processing and retrieval:
 
 1. **Ingest** a document to create structured chunks/chunksets:
    ```bash
-   python example.py ingest ./docs/example.html
+   python example.py ingest example.html
    ```
    (use example.pdf also in this repo if you want to try PDF)
 
