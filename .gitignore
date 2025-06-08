@@ -1,7 +1,11 @@
-# everything but the explicit include list!
 *
+
+example*.py
+
 !.gitignore
-!example.html
-!example.pdf
-!example.py
-!example*.py
+!examples/
+!examples/example.html
+!examples/example.pdf
+!examples/example.py
+!examples/example_langchain.py
+!examples/example_llamaindex.py
