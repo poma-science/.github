@@ -1,7 +1,5 @@
 *
-
-example*.py
-
+!README.md
 !.gitignore
 !examples/
 !examples/example.html
@@ -9,3 +7,4 @@ example*.py
 !examples/example.py
 !examples/example_langchain.py
 !examples/example_llamaindex.py
+!examples/db_mini_example.py

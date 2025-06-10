@@ -37,7 +37,7 @@ The resulting cheatsheet provides the LLM with precisely the context it needs to
 Requires **Python 3.10+**. Install the core packages:
 
 ```bash
-pip install poma-senter doc2poma poma_chunker
+pip install poma-senter doc2poma poma-chunker
 ```
 
 For integrations into LangChain and LlamaIndex, add `pip install poma-integrations` and your framework-specific packages as needed.
@@ -51,7 +51,7 @@ Additional requirements and recommended models are detailed in the [Installation
 We provide three example implementations to help you get started with POMA:
 
 1. **[example.py](./examples/example.py)** - A standalone implementation showing the basic POMA workflow with simple keyword-based retrieval
-2. **[example_langchain.py](./examples/example_langchain.py)** - Integration with LangChain, demonstrating how to use POMA with LangChain's RetrievalQA
+2. **[example_langchain.py](./examples/example_langchain.py)** - Integration with LangChain, demonstrating how to use POMA with LangChain's LCEL
 3. **[example_llamaindex.py](./examples/example_llamaindex.py)** - Integration with LlamaIndex, showing how to use POMA with LlamaIndex's query engine
 
 All examples follow the same two-phase process (ingest → retrieve) but demonstrate different integration options for your RAG pipeline.
@@ -62,7 +62,7 @@ POMA offers a simple two-step process for document processing and retrieval:
 
 1. **Ingest** a document to create structured chunks/chunksets:
    ```bash
-   python example.py ingest ./docs/example.html
+   python example.py ingest example.html
    ```
    (use example.pdf also in this repo if you want to try PDF)
 
@@ -81,14 +81,15 @@ from dotenv import load_dotenv
 import doc2poma, poma_chunker
 
 # Simple configuration and setup
-load_dotenv()  # Load API keys from .env file (otherwise, set them as environment variables)
 STORE = Path("store")
-CONFIG = {
-    "conversion_provider": "gemini",
-    "conversion_model": "gemini-2.0-flash",
-    "chunking_provider": "openai",
-    "chunking_model": "gpt-4.1-mini",
-}
+POMA_CONFIG = dict(
+    conversion_provider="gemini",
+    conversion_model="gemini-2.0-flash",
+    chunking_provider="openai",
+    chunking_model="gpt-4.1-mini",
+)
+
+load_dotenv()  # Load API keys from .env file (otherwise, set them as environment variables)
 ```
 
 #### Step 1: Document Ingestion
@@ -97,17 +98,17 @@ CONFIG = {
 def ingest(src: str) -> None:
     """Convert a document to POMA format and extract chunks/chunksets."""
     STORE.mkdir(exist_ok=True)
-    
+
     # Convert to POMA archive
-    archive_path, costs = doc2poma.convert(src, config=CONFIG, base_url=None)
-    
+    archive_path, costs = doc2poma.convert(src, config=POMA_CONFIG, base_url=None)
+
     # Process the archive into chunks and chunksets
-    result = poma_chunker.process(archive_path, CONFIG)
+    result = poma_chunker.process(archive_path, POMA_CONFIG)
     chunks, chunksets = result["chunks"], result["chunksets"]
-    
+
     # Save to store
     doc_id = Path(src).stem
-    with open(STORE / f"{doc_id}.json", "w") as file:
+    with open(f"STORE / {doc_id}.json", "w", encoding="utf-8") as file:
         json.dump({"chunks": chunks, "chunksets": chunksets}, file)
 ```
 
@@ -122,8 +123,6 @@ def _tokenize(text: str) -> list[str]:
 
 def retrieve(query: str, top_k: int = 2) -> None:
     """Find relevant chunksets and generate document-specific cheatsheets."""
-    if not STORE.exists():
-        sys.exit("No store/ found — run ingest first.")
     
     # Load all document data
     all_data = []
@@ -148,9 +147,8 @@ def retrieve(query: str, top_k: int = 2) -> None:
             if score > 0:
                 scored_chunksets.append((score, doc_id, cs, chunks))
     
-    # Sort by score and take top_k results
+    # Sort results by score
     scored_chunksets.sort(key=lambda x: x[0], reverse=True)
-    top_results = scored_chunksets[:top_k]
 
     # Group results by document
     results_by_doc = {}
@@ -194,6 +192,8 @@ if __name__ == "__main__":
         if len(sys.argv) < 3:
             sys.exit("Usage: python example.py retrieve <query>")
         retrieve(" ".join(sys.argv[2:]))
+    else:
+        sys.exit("Unknown command. Use 'ingest' or 'retrieve'.")
 ```
 
 Swap the simple keyword search with your vector/full-text DB and you have a minimal RAG loop!
@@ -412,10 +412,10 @@ This example shows how to integrate POMA with LangChain's retrieval and QA compo
 
 - **Integration Classes**: Uses `Doc2PomaLoader`, `PomaChunksetSplitter`, and `PomaCheatsheetRetriever` from `poma_integrations.langchain_poma`
 - **Key Features**:
-  - Stores chunks in SQLite for persistence
-  - Uses Chroma vector store with HuggingFace embeddings
-  - Integrates with LangChain's `RetrievalQA` for question answering
-  - Shows how to create a custom chunk fetcher function
+  - Stores chunks and chunksets in SQLite for persistence
+  - Uses FAISS for vector search with OpenAI embeddings
+  - Implements a question answering chain using LangChain’s LCEL components
+  - Demonstrates how to define a custom chunkset fetcher for context-aware retrieval
 
 ### 3. LlamaIndex Integration ([example_llamaindex.py](./examples/example_llamaindex.py))
 
@@ -424,9 +424,9 @@ This example demonstrates how to use POMA with LlamaIndex's document processing 
 - **Integration Classes**: Uses `Doc2PomaReader`, `PomaChunksetNodeParser`, and `PomaCheatsheetPostProcessor` from `poma_integrations.llamaindex_poma`
 - **Key Features**:
   - Similar SQLite storage pattern as the LangChain example
-  - Uses LlamaIndex's `VectorStoreIndex` for retrieval
-  - Implements a post-processor to generate cheatsheets from retrieved nodes
-  - Shows integration with LlamaIndex's query engine and REACT chat mode
+  - Uses `VectorStoreIndex` from LlamaIndex for semantic retrieval
+  - Applies a post-processor to generate cheatsheets from retrieved nodes
+  - Demonstrates integration with LlamaIndex's `CustomQueryEngine`
 
 ### Common Patterns Across Examples
 
@@ -460,7 +460,7 @@ The main differences are in how they integrate with different RAG frameworks and
 Requires **Python 3.10+**.
 
 ```
-pip install poma-senter doc2poma poma_chunker
+pip install poma-senter doc2poma poma-chunker
 ```
 
 For the integration examples, you will also need:
@@ -473,7 +473,7 @@ And depending on which integration you are using:
 
 ```
 # For LangChain example
-pip install langchain-openai chromadb sentence-transformers
+pip install faiss-cpu langchain langchain-openai langchain-community
 
 # For LlamaIndex example
 pip install llama-index-llms-openai

@@ -22,35 +22,34 @@ from pathlib import Path
 from dotenv import load_dotenv
 import doc2poma, poma_chunker
 
+#################
+# Configuration #
+#################
 
 STORE = Path("store")
-CONFIG = {
-    "conversion_provider": "gemini",
-    "conversion_model": "gemini-2.0-flash",
-    "chunking_provider": "openai",
-    "chunking_model": "gpt-4.1-mini",
-}
+POMA_CONFIG = dict(
+    conversion_provider="gemini",
+    conversion_model="gemini-2.0-flash",
+    chunking_provider="openai",
+    chunking_model="gpt-4.1-mini",
+)
 
+#############
+# Env Check #
+#############
 
-def load_api_keys():
-    """Load API keys from .env file or environment variables."""
-    load_dotenv()
-    required_keys = ["OPENAI_API_KEY", "GEMINI_API_KEY"]
-    missing_keys = [key for key in required_keys if not os.environ.get(key)]
-    if missing_keys:
-        print(f"Warning: Missing API keys: {', '.join(missing_keys)}")
-        print("Set these as environment variables or create a .env file.")
-        print("Example .env file:")
-        for key in missing_keys:
-            print(f"{key}=your_{key.lower()}_here")
-        return False
-    return True
+load_dotenv()
+for key in ("OPENAI_API_KEY", "GEMINI_API_KEY"):
+    if not os.getenv(key):
+        raise SystemExit(f"Set {key} as env-var or in a .env file")
+
+#############
+# Ingestion #
+#############
 
 
 def ingest(src: str) -> None:
     """Convert a document to POMA format and extract chunks/chunksets."""
-    if not load_api_keys():
-        sys.exit("Missing required API keys. Please set them and try again.")
 
     # Create store directory if it doesn't exist
     STORE.mkdir(exist_ok=True)
@@ -69,14 +68,14 @@ def ingest(src: str) -> None:
 
     try:
         archive_path, conversion_costs = doc2poma.convert(
-            str(src_path), config=CONFIG, base_url=None
+            str(src_path), config=POMA_CONFIG, base_url=None
         )
         print(
             f"✅ Generated POMA archive: {archive_path} – for USD {conversion_costs:.5f}"
         )
 
         print("🪄 Extracting chunks and chunksets...")
-        result = poma_chunker.process(archive_path, CONFIG)
+        result = poma_chunker.process(archive_path, POMA_CONFIG)
         chunks, chunksets = result["chunks"], result["chunksets"]
         chunking_costs = result.get("costs", 0.0)
         print(
@@ -98,7 +97,12 @@ def ingest(src: str) -> None:
         sys.exit(f"Error processing document: {exception}")
 
 
-def _tok(text: str) -> list[str]:
+#############
+# Retrieval #
+#############
+
+
+def _tokenize(text: str) -> list[str]:
     """Simple tokenization for keyword matching."""
     return re.findall(r"[\w']+", text.lower())
 
@@ -124,7 +128,7 @@ def retrieve(query: str, top_k: int = 2) -> None:
         )
 
     # Simple keyword matching (replace with vector search in production)
-    query_tokens = set(_tok(query))
+    query_tokens = set(_tokenize(query))
     scored_chunksets = []
 
     # Score each chunkset based on keyword overlap
@@ -140,7 +144,7 @@ def retrieve(query: str, top_k: int = 2) -> None:
                 if cid in chunk_by_id
             )
             # Score based on keyword overlap
-            score = len(query_tokens & set(_tok(text)))
+            score = len(query_tokens & set(_tokenize(text)))
             if score > 0:
                 scored_chunksets.append((score, doc_id, cs, chunks))
 
