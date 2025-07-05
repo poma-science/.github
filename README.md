@@ -3,4 +3,4 @@ Please do NOT use the repos/packages mentioned here anymore, they are deprecated
 
 The new solution is accessible at:
 
-#[https://www.poma-ai.com](https://www.poma-ai.com)
+[https://www.poma-ai.com](https://www.poma-ai.com)
